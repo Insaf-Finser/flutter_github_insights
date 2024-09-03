@@ -19,7 +19,7 @@ void main() async {
   Hive.registerAdapter(OwnerAdapter());
   Hive.registerAdapter(PermissionsAdapter());
 
-  //  Hive.deleteBoxFromDisk('gitReposBox');
+  //Hive.deleteBoxFromDisk('gitReposBox');
   await Hive.openBox<Repo>('gitReposBox');
   // Open a box for storing repositories
   runApp(const ProviderScope(child: MainApp()));

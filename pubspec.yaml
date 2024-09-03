@@ -19,6 +19,8 @@ dependencies:
   hive_generator: ^2.0.1
   http: null
   path_provider: ^2.1.4
+  riverpod_annotation: ^2.3.5
+  riverpod_generator: ^2.4.3
   shared_preferences: null
 
 dev_dependencies:
