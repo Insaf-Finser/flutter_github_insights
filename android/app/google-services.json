@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "52238829616",
+    "project_id": "flutter-github-insights-475de",
+    "storage_bucket": "flutter-github-insights-475de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:52238829616:android:30c68ba05664ebb6c145f5",
+        "android_client_info": {
+          "package_name": "com.example1.git_rest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVCcY8ht0RwD-LnHHSI2xK9VOR3EwYn_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

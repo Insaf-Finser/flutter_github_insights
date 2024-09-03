@@ -1,9 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:git_rest/data/models/hive_model.dart';
 import 'package:git_rest/firebase_options.dart';
 import 'package:git_rest/riverpod/auth_provider.dart';
 import 'package:git_rest/riverpod/router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +13,15 @@ void main() async {
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions
           .currentPlatform); //flutterfire config (firebase_options.dart)
+  await Hive.initFlutter();
 
+  Hive.registerAdapter(RepoAdapter());
+  Hive.registerAdapter(OwnerAdapter());
+  Hive.registerAdapter(PermissionsAdapter());
+
+  //  Hive.deleteBoxFromDisk('gitReposBox');
+  await Hive.openBox<Repo>('gitReposBox');
+  // Open a box for storing repositories
   runApp(const ProviderScope(child: MainApp()));
 }
 

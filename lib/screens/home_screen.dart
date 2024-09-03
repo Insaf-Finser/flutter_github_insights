@@ -4,9 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:git_rest/constants.dart';
 import 'package:git_rest/data/git_operations.dart';
 import 'package:git_rest/data/models/git_repo_model.dart';
+import 'package:git_rest/data/models/hive_model.dart' as hive_model;
+import 'package:git_rest/data/models/hive_model.dart';
 import 'package:git_rest/routes/route_names.dart';
 import 'package:git_rest/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -19,7 +22,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   GitOperations ops = GitOperations(token: '');
   final User user = FirebaseAuth.instance.currentUser!;
 
-  List<GitRepo> gitRepos = [];
+  List<Repo> gitRepos = [];
 
   fetchToken() async {
     var token = await getAccessToken();
@@ -28,24 +31,89 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     setState(() {});
   }
 
-  fetchAllRepos() async {
-    final data = await ops.listRepositories(true);
-    for (var repoData in data) {
-      gitRepos.add(GitRepo.fromMap(repoData));
-    }
+  Future<void> fetchAllRepos() async {
+    try {
+      final box = Hive.box<Repo>('gitReposBox'); // Ensure the correct box type
 
-    setState(() {});
+      // Clear existing repos
+      await box.clear();
+
+      final data = await ops.listRepositories(true);
+      printInDebug(data);
+      final repos = data.map((repoData) => GitRepo.fromMap(repoData)).toList();
+
+      final List<Repo> r = [];
+
+      // Add repos to Hive
+      for (var repo in repos) {
+        printInDebug(repo);
+        await box.put(
+          repo.id,
+          hive_model.Repo(
+            id: repo.id,
+            nodeId: repo.nodeId,
+            name: repo.name,
+            fullName: repo.fullName,
+            owner: hive_model.Owner(
+              login: repo.owner.login,
+              id: repo.owner.id,
+              avatarUrl: repo.owner.avatarUrl,
+            ),
+            private: repo.private,
+            defaultBranch: repo.defaultBranch,
+            permissions: hive_model.Permissions(
+              admin: repo.permissions.admin,
+              push: repo.permissions.push,
+              pull: repo.permissions.pull,
+            ),
+          ),
+        );
+        r.add(
+          hive_model.Repo(
+            id: repo.id,
+            nodeId: repo.nodeId,
+            name: repo.name,
+            fullName: repo.fullName,
+            owner: hive_model.Owner(
+              login: repo.owner.login,
+              id: repo.owner.id,
+              avatarUrl: repo.owner.avatarUrl,
+            ),
+            private: repo.private,
+            defaultBranch: repo.defaultBranch,
+            permissions: hive_model.Permissions(
+              admin: repo.permissions.admin,
+              push: repo.permissions.push,
+              pull: repo.permissions.pull,
+            ),
+          ),
+        );
+      }
+
+      setState(() {
+        gitRepos = r;
+      });
+    } catch (e) {
+      printInDebug('Error fetching repos: $e');
+    }
   }
 
-  initialise() async {
-    await fetchToken();
-    await fetchAllRepos();
+  Future<void> initialise() async {
+    final box = Hive.box<Repo>('gitReposBox'); // Use the correct box type
+
+    if (box.isNotEmpty) {
+      setState(() {
+        gitRepos = box.values.toList();
+      });
+    } else {
+      await fetchToken();
+      await fetchAllRepos();
+    }
   }
 
   @override
   void initState() {
     initialise();
-
     super.initState();
   }
 
@@ -63,7 +131,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-      body: ops.token.isEmpty
+      body: gitRepos.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
               itemCount: gitRepos.length,
