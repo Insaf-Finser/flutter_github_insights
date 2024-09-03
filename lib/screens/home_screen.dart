@@ -26,13 +26,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     repoNotifier = ref.read(repoNotifierProvider.notifier);
     repoNotifier.initialize();
-    
   }
 
   @override
   Widget build(BuildContext context) {
     final asyncRepos = ref.watch(repoNotifierProvider);
-    
 
     return Scaffold(
       appBar: AppBar(
@@ -41,11 +39,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: CircleAvatar(
             foregroundImage: NetworkImage(
               FirebaseAuth.instance.currentUser?.providerData
-                  .firstWhere((element) => element.providerId == 'github.com')
-                  .photoURL ?? '',
+                      .firstWhere(
+                          (element) => element.providerId == 'github.com')
+                      .photoURL ??
+                  '',
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              repoNotifier.updateCache();
+            },
+            tooltip: 'Update Cache',
+          ),
+        ],
       ),
       body: asyncRepos.when(
         data: (repos) => ListView.builder(
@@ -129,7 +138,8 @@ class _NewRepoDialogState extends State<NewRepoDialog> {
             children: [
               Text(
                 'Public ',
-                style: TextStyle(fontWeight: !isPrivate ? FontWeight.bold : null),
+                style:
+                    TextStyle(fontWeight: !isPrivate ? FontWeight.bold : null),
               ),
               Switch(
                 value: isPrivate,
@@ -137,7 +147,8 @@ class _NewRepoDialogState extends State<NewRepoDialog> {
               ),
               Text(
                 ' Private',
-                style: TextStyle(fontWeight: isPrivate ? FontWeight.bold : null),
+                style:
+                    TextStyle(fontWeight: isPrivate ? FontWeight.bold : null),
               ),
             ],
           ),

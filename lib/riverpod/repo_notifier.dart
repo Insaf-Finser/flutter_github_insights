@@ -1,3 +1,4 @@
+import 'package:git_rest/constants.dart';
 import 'package:git_rest/shared_preferences.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:git_rest/data/git_operations.dart';
@@ -33,8 +34,10 @@ class RepoNotifier extends AutoDisposeAsyncNotifier<List<hive_model.Repo>> {
       final box = await Hive.openBox<hive_model.Repo>('gitReposBox');
 
       if (box.isNotEmpty) {
+        printInDebug("box not empty");
         return box.values.toList();
       } else {
+        printInDebug("box empty");
         await _fetchAndCacheRepos();
         return state.asData?.value ?? [];
       }
@@ -92,5 +95,6 @@ class RepoNotifier extends AutoDisposeAsyncNotifier<List<hive_model.Repo>> {
       _ops = GitOperations(token: token);
     }
     await _fetchAndCacheRepos();
+    printInDebug("cache updated");
   }
 }
