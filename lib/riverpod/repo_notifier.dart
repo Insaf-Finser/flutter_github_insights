@@ -58,6 +58,12 @@ class RepoNotifier extends AutoDisposeAsyncNotifier<List<hive_model.Repo>> {
 
       final data = await _ops!.listRepositories(true);
       final repos = data.map((repoData) => GitRepo.fromMap(repoData)).toList();
+      // final List<Map<String, String>> selectedRepos = [
+      //   {'owner': 'Harsh-Vipin', 'repo': 'acm-hack'},
+      //   {'owner': 'Harsh-Vipin', 'repo': 'bbbb'},
+      // ];
+      // final d = await _ops!.getCollaboratorsForSelectedRepos(selectedRepos);
+      // printInDebug(d);
 
       final List<hive_model.Repo> r = [];
       for (var repo in repos) {

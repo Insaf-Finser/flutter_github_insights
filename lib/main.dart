@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:git_rest/data/models/collaborator.dart';
 import 'package:git_rest/data/models/hive_model.dart';
+import 'package:git_rest/data/models/repository_collaborators.dart';
 import 'package:git_rest/firebase_options.dart';
 import 'package:git_rest/riverpod/auth_provider.dart';
 import 'package:git_rest/riverpod/router.dart';
@@ -18,10 +20,14 @@ void main() async {
   Hive.registerAdapter(RepoAdapter());
   Hive.registerAdapter(OwnerAdapter());
   Hive.registerAdapter(PermissionsAdapter());
+  Hive.registerAdapter(CollaboratorAdapter());
+  Hive.registerAdapter(RepositoryCollaboratorsAdapter());
 
-  //Hive.deleteBoxFromDisk('gitReposBox');
+  // Hive.deleteBoxFromDisk('gitReposBox');
+  // Hive.deleteBoxFromDisk('repository_collaborators_box');
   await Hive.openBox<Repo>('gitReposBox');
-  // Open a box for storing repositories
+  await Hive.openBox<RepositoryCollaborators>('repository_collaborators_box');
+
   runApp(const ProviderScope(child: MainApp()));
 }
 

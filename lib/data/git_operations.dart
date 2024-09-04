@@ -111,4 +111,42 @@ class GitOperations {
 
     printInDebug('File updated successfully');
   }
+
+  Future<List<dynamic>> getRepoCollaborators(String owner, String repo) async {
+    final response = await http.get(
+      Uri.parse('https://api.github.com/repos/$owner/$repo/collaborators'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception(
+          'Failed to fetch collaborators for repository $repo: ${response.body}');
+    }
+  }
+
+  // Fetch collaborators for multiple repositories
+  Future<Map<String, List<dynamic>>> getCollaboratorsForSelectedRepos(
+      List<Map<String, String>> selectedRepos) async {
+    final collaboratorsMap = <String, List<dynamic>>{};
+
+    for (final repoInfo in selectedRepos) {
+      final owner = repoInfo['owner']!;
+      final repo = repoInfo['repo']!;
+
+      try {
+        final collaborators = await getRepoCollaborators(owner, repo);
+        collaboratorsMap[repo] = collaborators;
+      } catch (e) {
+        printInDebug('Error fetching collaborators for $repo: $e');
+      }
+    }
+
+    return collaboratorsMap;
+  }
 }

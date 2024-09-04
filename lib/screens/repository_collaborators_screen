@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:git_rest/riverpod/collaborators_notifier.dart';
+import 'package:git_rest/data/models/repository_collaborators.dart';
+class RepositoryCollaboratorsScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final collaboratorsAsyncValue = ref.watch(collaboratorsNotifierProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Repository Collaborators')),
+      body: collaboratorsAsyncValue.when(
+        data: (collaboratorsList) {
+          // Initialize a map to track selected collaborators for each repository
+          final selectedCollaborators = <String, Set<String>>{};
+
+          return ListView.builder(
+            itemCount: collaboratorsList.length,
+            itemBuilder: (context, index) {
+              final repoCollaborators = collaboratorsList[index];
+              // Initialize set of selected collaborators for the current repository
+              final selectedSet = selectedCollaborators.putIfAbsent(
+                  repoCollaborators.repositoryName, () => <String>{});
+
+              return Card(
+                elevation: 0,
+                child: ExpansionTile(
+                  title: Text(repoCollaborators.repositoryName),
+                  children: repoCollaborators.collaborators
+                      .map((collaborator) {
+                        return CheckboxListTile(
+                          title: Text(collaborator.login),
+                          value: selectedSet.contains(collaborator.login),
+                          onChanged: (bool? value) {
+                            // Update the selection in the map
+                            if (value == true) {
+                              selectedSet.add(collaborator.login);
+                            } else {
+                              selectedSet.remove(collaborator.login);
+                            }
+
+                            // Trigger a rebuild (optional)
+                            ref.refresh(collaboratorsNotifierProvider);
+                          },
+                        );
+                      })
+                      .toList(),
+                ),
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(child: Text('Error: $error')),
+      ),
+    );
+  }
+}

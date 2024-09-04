@@ -3,8 +3,13 @@ import 'package:git_rest/data/models/git_repo_model.dart';
 import 'package:git_rest/routes/route_names.dart';
 import 'package:git_rest/screens/home_screen.dart';
 import 'package:git_rest/screens/repo_contents_screen.dart';
+
 import 'package:git_rest/screens/welome_screen.dart';
+ // Import the new screen
+
 import 'package:go_router/go_router.dart';
+
+import '../screens/repository_collaborators_screen';
 
 final List<GoRoute> routes = [
   GoRoute(
@@ -27,7 +32,15 @@ final List<GoRoute> routes = [
             ops: map['ops'] as GitOperations,
           );
         },
-      )
+      ),
+      GoRoute(
+        path: 'repositoryCollaborators', // Updated path
+        name: 'repositoryCollaborators', // Updated name
+        builder: (context, state) {
+          // No need for extra data for this screen
+          return  RepositoryCollaboratorsScreen();
+        },
+      ),
     ],
   ),
 ];
