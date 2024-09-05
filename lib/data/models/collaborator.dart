@@ -1,3 +1,4 @@
+import 'package:git_rest/constants.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'collaborator.g.dart';
@@ -106,8 +107,8 @@ factory Collaborator.fromMap(Map<String, dynamic> map) {
       roleName: map['role_name'] ?? '',
     );
   } catch (e) {
-    print('Error in Collaborator.fromMap: $e');
-    throw e;
+    printInDebug('Error in Collaborator.fromMap: $e');
+    rethrow;
   }
 }
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:git_rest/riverpod/collaborators_notifier.dart';
-import 'package:git_rest/data/models/repository_collaborators.dart';
+
+
 class RepositoryCollaboratorsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -14,40 +15,70 @@ class RepositoryCollaboratorsScreen extends ConsumerWidget {
           // Initialize a map to track selected collaborators for each repository
           final selectedCollaborators = <String, Set<String>>{};
 
-          return ListView.builder(
-            itemCount: collaboratorsList.length,
-            itemBuilder: (context, index) {
-              final repoCollaborators = collaboratorsList[index];
-              // Initialize set of selected collaborators for the current repository
-              final selectedSet = selectedCollaborators.putIfAbsent(
-                  repoCollaborators.repositoryName, () => <String>{});
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: collaboratorsList.length,
+                  itemBuilder: (context, index) {
+                    final repoCollaborators = collaboratorsList[index];
+                    // Initialize set of selected collaborators for the current repository
+                    final selectedSet = selectedCollaborators.putIfAbsent(
+                        repoCollaborators.repositoryName, () => <String>{});
 
-              return Card(
-                elevation: 0,
-                child: ExpansionTile(
-                  title: Text(repoCollaborators.repositoryName),
-                  children: repoCollaborators.collaborators
-                      .map((collaborator) {
-                        return CheckboxListTile(
-                          title: Text(collaborator.login),
-                          value: selectedSet.contains(collaborator.login),
-                          onChanged: (bool? value) {
-                            // Update the selection in the map
-                            if (value == true) {
-                              selectedSet.add(collaborator.login);
-                            } else {
-                              selectedSet.remove(collaborator.login);
-                            }
+                    return Card(
+                      elevation: 0,
+                      child: ExpansionTile(
+                        title: Text(repoCollaborators.repositoryName),
+                        children: repoCollaborators.collaborators
+                            .map((collaborator) {
+                              return CheckboxListTile(
+                                title: Text(collaborator.login),
+                                value: selectedSet.contains(collaborator.login),
+                                onChanged: (bool? value) {
+                                  // Update the selection in the map
+                                  if (value == true) {
+                                    selectedSet.add(collaborator.login);
+                                  } else {
+                                    selectedSet.remove(collaborator.login);
+                                  }
 
-                            // Trigger a rebuild (optional)
-                            ref.refresh(collaboratorsNotifierProvider);
-                          },
-                        );
-                      })
-                      .toList(),
+                                  // Trigger a rebuild (optional)
+                                  ref.refresh(collaboratorsNotifierProvider);
+                                },
+                              );
+                            })
+                            .toList(),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    // Hardcoded values for selected repos and collaborators
+                    final selectedRepos = [
+                      {'owner': 'octocat', 'repo': 'Hello-World'},
+                      {'owner': 'flutter', 'repo': 'flutter'}
+                    ];
+
+                    final selectedCollaborators = ['octocat', 'another-collaborator'];
+
+                    final since = DateTime.now().subtract(const Duration(days: 30));
+                    final until = DateTime.now();
+                    final token = await getAccessToken();
+                    _ops = GitOperations(token: token);
+                    
+                    final data = await _ops!.
+                  
+                    // print('Commit Data: $commitData');
+                  },
+                  child: const Text('Fetch Commits'),
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

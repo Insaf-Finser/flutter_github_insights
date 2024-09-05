@@ -149,4 +149,64 @@ class GitOperations {
 
     return collaboratorsMap;
   }
+
+  Future<Map<String, List<Map<String, dynamic>>>> getCommitsForSelectedRepos({
+    required List<Map<String, String>> selectedRepos,
+    required List<String> selectedCollaborators,
+    required DateTime since,
+    required DateTime until,
+  }) async {
+    final commitsMap = <String, List<Map<String, dynamic>>>{};
+
+    for (final repoInfo in selectedRepos) {
+      final owner = repoInfo['owner']!;
+      final repo = repoInfo['repo']!;
+
+      for (final collaborator in selectedCollaborators) {
+        final queryParameters = {
+          'author': collaborator,
+          'since': since.toUtc().toIso8601String(),
+          'until': until.toUtc().toIso8601String(),
+        };
+
+        final uri = Uri.https(
+          'api.github.com',
+          '/repos/$owner/$repo/commits',
+          queryParameters,
+        );
+
+        try {
+          final response = await http.get(
+            uri,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+            },
+          );
+
+          if (response.statusCode == 200) {
+            final List<dynamic> commits = json.decode(response.body);
+            final parsedCommits = commits.map<Map<String, dynamic>>((commit) {
+              return {
+                'sha': commit['sha'],
+                'message': commit['commit']['message'],
+                'author': commit['commit']['author']['name'],
+                'date': commit['commit']['author']['date'],
+                'url': commit['html_url'],
+              };
+            }).toList();
+
+            commitsMap[repo] = [...(commitsMap[repo] ?? []), ...parsedCommits];
+          } else {
+            throw Exception('Failed to fetch commits for repository $repo');
+          }
+        } catch (e) {
+          printInDebug('Error fetching commits for $repo by $collaborator: $e');
+        }
+      }
+    }
+    printInDebug("commit$commitsMap");
+    return commitsMap;
+  }
 }
