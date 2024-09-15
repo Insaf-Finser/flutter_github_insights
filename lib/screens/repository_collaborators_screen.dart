@@ -179,7 +179,7 @@ class _RepositoryCollaboratorsScreenState
                     final selectedRepos = selectedCollaborators.entries
                         .where((entry) => entry.value.isNotEmpty)
                         .map((entry) =>
-                            {'owner': 'Harsh-Vipin', 'repo': entry.key})
+                            {'owner': entry.value.toString(), 'repo': entry.key})
                         .toList();
 
                     final allSelectedCollaborators = selectedCollaborators
