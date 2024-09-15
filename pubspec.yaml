@@ -11,6 +11,7 @@ dependencies:
   file_selector: null
   firebase_auth: null
   firebase_core: null
+  fl_chart: ^0.69.0
   flutter:
     sdk: flutter
   flutter_riverpod: null
@@ -19,8 +20,14 @@ dependencies:
   hive_generator: ^2.0.1
   http: null
   path_provider: ^2.1.4
+  pdf: ^3.11.1
+  pdf_image_renderer: ^0.7.0
+  print_slayer: ^1.1.0
+  printing: ^5.13.2
   riverpod_annotation: ^2.3.5
   riverpod_generator: ^2.4.3
+  screenshot: ^3.0.0
+  share_plus: ^10.0.2
   shared_preferences: null
 
 dev_dependencies:

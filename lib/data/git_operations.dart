@@ -187,6 +187,7 @@ class GitOperations {
 
           if (response.statusCode == 200) {
             final List<dynamic> commits = json.decode(response.body);
+            printInDebug("raw${commits[0]}");
             final parsedCommits = commits.map<Map<String, dynamic>>((commit) {
               return {
                 'sha': commit['sha'],
@@ -206,7 +207,42 @@ class GitOperations {
         }
       }
     }
-    printInDebug("commit$commitsMap");
+    //printInDebug("commit map$commitsMap");
     return commitsMap;
+  }
+
+  Future<Map<String, dynamic>> getCommitDetails({
+    required String owner,
+    required String repo,
+    required String ref,
+  }) async {
+    final url = 'https://api.github.com/repos/Harsh-Vipin/$repo/commits/$ref';
+    
+
+    final headers = {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+   
+
+    try {
+      final response = await http.get(Uri.parse(url), headers: headers);
+      
+
+      if (response.statusCode == 200) {
+        final commitDetails = json.decode(response.body);
+   
+        
+
+        return commitDetails;
+      } else {
+       
+        throw Exception('Failed to fetch commit details: ${response.body}');
+      }
+    } catch (e) {
+     
+      rethrow;
+    }
   }
 }

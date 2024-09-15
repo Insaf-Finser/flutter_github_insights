@@ -19,8 +19,10 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final RepoNotifier repoNotifier;
   late final CollaboratorsNotifier collaboratorsNotifier;
-  List<Map<String, String>> selectedRepos =
-      []; // List to keep track of selected repos
+  List<Map<String, String>> selectedRepos = []; // List to keep track of selected repos
+  bool get _hasSelectedRepos => selectedRepos.isNotEmpty; // Check if any checkboxes are selected
+  final TextEditingController searchController = TextEditingController(); // Controller for search input
+  String searchQuery = ''; // Variable to store search query
 
   @override
   void initState() {
@@ -37,68 +39,101 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: customAppBar(),
-      body: asyncRepos.when(
-        data: (repos) => ListView.builder(
-          itemCount: repos.length,
-          itemBuilder: (context, index) {
-            final repo = repos[index];
-            final isChecked = selectedRepos.any(
-              (item) =>
-                  item['repo'] == repo.name &&
-                  item['owner'] == repo.owner?.login,
-            );
-
-            return Card(
-              elevation: 0,
-              child: ListTile(
-                trailing: Checkbox(
-                  value: isChecked,
-                  onChanged: (value) {
-                    setState(() {
-                      if (value == true) {
-                        selectedRepos.add({
-                          'repo': repo.name,
-                          'owner': repo.owner?.login ?? '',
-                        });
-                      } else {
-                        selectedRepos.removeWhere(
-                          (item) =>
-                              item['repo'] == repo.name &&
-                              item['owner'] == repo.owner?.login,
-                        );
-                      }
-                    });
-                  },
-                ),
-                title: Text(repo.name),
-                subtitle: Text(repo.owner?.login ?? ''),
-                onTap: () => context.pushNamed(
-                  Routes.repoContentScreen,
-                  extra: {
-                    'repo': GitRepo(
-                        id: repo.id,
-                        nodeId: repo.nodeId,
-                        name: repo.name,
-                        fullName: repo.fullName,
-                        owner: Owner(
-                            login: repo.owner!.login,
-                            id: repo.owner!.id,
-                            avatarUrl: repo.owner!.avatarUrl),
-                        private: repo.private,
-                        defaultBranch: repo.defaultBranch,
-                        permissions: Permissions(
-                            admin: repo.permissions!.admin,
-                            push: repo.permissions!.push,
-                            pull: repo.permissions!.pull)),
-                    'ops': repoNotifier.ops
-                  },
+      body: Column(
+        children: [
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Search repositories...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-            );
-          },
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Error: $error')),
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value.toLowerCase(); // Update the search query on text change
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: asyncRepos.when(
+              data: (repos) {
+                final filteredRepos = repos.where((repo) {
+                  final repoName = repo.name.toLowerCase();
+                  final ownerName = repo.owner?.login?.toLowerCase() ?? '';
+                  return repoName.contains(searchQuery) || ownerName.contains(searchQuery);
+                }).toList();
+
+                return ListView.builder(
+                  itemCount: filteredRepos.length,
+                  itemBuilder: (context, index) {
+                    final repo = filteredRepos[index];
+                    final isChecked = selectedRepos.any(
+                      (item) =>
+                          item['repo'] == repo.name &&
+                          item['owner'] == repo.owner?.login,
+                    );
+
+                    return Card(
+                      elevation: 0,
+                      child: ListTile(
+                        trailing: Checkbox(
+                          value: isChecked,
+                          onChanged: (value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedRepos.add({
+                                  'repo': repo.name,
+                                  'owner': repo.owner?.login ?? '',
+                                });
+                              } else {
+                                selectedRepos.removeWhere(
+                                  (item) =>
+                                      item['repo'] == repo.name &&
+                                      item['owner'] == repo.owner?.login,
+                                );
+                              }
+                            });
+                          },
+                        ),
+                        title: Text(repo.name),
+                        subtitle: Text(repo.owner?.login ?? ''),
+                        onTap: () => context.pushNamed(
+                          Routes.repoContentScreen,
+                          extra: {
+                            'repo': GitRepo(
+                                id: repo.id,
+                                nodeId: repo.nodeId,
+                                name: repo.name,
+                                fullName: repo.fullName,
+                                owner: Owner(
+                                    login: repo.owner!.login,
+                                    id: repo.owner!.id,
+                                    avatarUrl: repo.owner!.avatarUrl),
+                                private: repo.private,
+                                defaultBranch: repo.defaultBranch,
+                                permissions: Permissions(
+                                    admin: repo.permissions!.admin,
+                                    push: repo.permissions!.push,
+                                    pull: repo.permissions!.pull)),
+                            'ops': repoNotifier.ops
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) => Center(child: Text('Error: $error')),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: Fab(repoNotifier: repoNotifier),
     );
@@ -125,17 +160,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           },
           tooltip: 'Update Cache',
         ),
-        IconButton(
-          icon: const Icon(Icons.abc),
-          onPressed: () async {
-            // Update selected repos and wait for it to complete
-            await collaboratorsNotifier.updateSelectedRepos(selectedRepos);
-
-            // Navigate to the new screen after the update is finished
-            context.pushNamed(Routes.repositoryCollaboratorsScreen);
-          },
-          tooltip: 'Update repo',
-        ),
+        if (_hasSelectedRepos)
+          IconButton(
+            icon: const Icon(Icons.arrow_circle_right),
+            onPressed: () async {
+              await collaboratorsNotifier.updateSelectedRepos(selectedRepos);
+              context.pushNamed(Routes.repositoryCollaboratorsScreen);
+            },
+            tooltip: 'Update repo',
+          ),
       ],
     );
   }

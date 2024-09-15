@@ -1,15 +1,18 @@
 import 'package:git_rest/data/git_operations.dart';
 import 'package:git_rest/data/models/git_repo_model.dart';
 import 'package:git_rest/routes/route_names.dart';
+import 'package:git_rest/screens/chart_screen.dart';
 import 'package:git_rest/screens/home_screen.dart';
 import 'package:git_rest/screens/repo_contents_screen.dart';
+import 'package:git_rest/screens/repository_collaborators_screen.dart';
 
 import 'package:git_rest/screens/welome_screen.dart';
  // Import the new screen
 
 import 'package:go_router/go_router.dart';
 
-import '../screens/repository_collaborators_screen';
+
+
 
 final List<GoRoute> routes = [
   GoRoute(
@@ -37,8 +40,14 @@ final List<GoRoute> routes = [
         path: 'repositoryCollaborators', // Updated path
         name: 'repositoryCollaborators', // Updated name
         builder: (context, state) {
-          // No need for extra data for this screen
-          return  RepositoryCollaboratorsScreen();
+          return const RepositoryCollaboratorsScreen();
+        },
+      ),
+      GoRoute(
+        path: 'chartScreen', // Path for ChartScreen
+        name: Routes.chartScreen, // Name for ChartScreen
+        builder: (context, state) {
+          return const ChartScreen(); // Returning the ChartScreen widget
         },
       ),
     ],
