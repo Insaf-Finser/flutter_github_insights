@@ -19,33 +19,43 @@ class _RepositoryCollaboratorsScreenState
   // Map to store the selected collaborators for each repository
   final selectedCollaborators = <String, Set<String>>{};
 
-  // Date controllers for start and end date
-  DateTime? _startDate;
-  DateTime? _endDate;
+  // Separate controllers for start and end dates
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
 
   // Search functionality
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+Future<void> _selectDate(BuildContext context, bool isStartDate) async {
+  final pickedDate = await showDatePicker(
+    context: context,
+    initialDate: isStartDate
+        ? DateTime.now().subtract(const Duration(days: 365))
+        : DateTime.now(),
+    firstDate: DateTime(2000),
+    lastDate: DateTime.now(),
+  );
 
-  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
-    final pickedDate = await showDatePicker(
-      context: context,
-      initialDate: isStartDate
-          ? _startDate ?? DateTime.now().subtract(const Duration(days: 365))
-          : _endDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-    );
+  if (pickedDate != null) {
+    setState(() {
+      // Format the date as YYYY-MM-DD, which is compatible with DateTime.parse
+      final formattedDate = '${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}';
 
-    if (pickedDate != null) {
-      setState(() {
-        if (isStartDate) {
-          _startDate = pickedDate;
-        } else {
-          _endDate = pickedDate;
-        }
-      });
-    }
+      if (isStartDate) {
+        _startDateController.text = formattedDate;
+      } else {
+        _endDateController.text = formattedDate;
+      }
+    });
+  }
+}
+
+  @override
+  void dispose() {
+    _startDateController.dispose();
+    _endDateController.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -98,43 +108,30 @@ class _RepositoryCollaboratorsScreenState
                   },
                 ),
               ),
-              // Date pickers for start and end dates
+              // Start Date Picker
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              labelText: 'Start Date',
-                              hintText: _startDate != null
-                                  ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}'
-                                  : 'Select Start Date',
-                              suffixIcon: const Icon(Icons.calendar_today),
-                            ),
-                            onTap: () => _selectDate(context, true),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextFormField(
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              labelText: 'End Date',
-                              hintText: _endDate != null
-                                  ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
-                                  : 'Select End Date',
-                              suffixIcon: const Icon(Icons.calendar_today),
-                            ),
-                            onTap: () => _selectDate(context, false),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                child: TextFormField(
+                  controller: _startDateController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Start Date',
+                    suffixIcon: const Icon(Icons.calendar_today),
+                  ),
+                  onTap: () => _selectDate(context, true),
+                ),
+              ),
+              // End Date Picker
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextFormField(
+                  controller: _endDateController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'End Date',
+                    suffixIcon: const Icon(Icons.calendar_today),
+                  ),
+                  onTap: () => _selectDate(context, false),
                 ),
               ),
               Expanded(
@@ -194,9 +191,12 @@ class _RepositoryCollaboratorsScreenState
                     }
 
                     // Use selected start and end dates or default to last 5 years
-                    final since = _startDate ??
-                        DateTime.now().subtract(const Duration(days: 365 * 5));
-                    final until = _endDate ?? DateTime.now();
+                    final since = _startDateController.text.isNotEmpty
+                        ? DateTime.parse(_startDateController.text)
+                        : DateTime.now().subtract(const Duration(days: 365 * 5));
+                    final until = _endDateController.text.isNotEmpty
+                        ? DateTime.parse(_endDateController.text)
+                        : DateTime.now();
 
                     // Call the CommitsNotifier to fetch commits for the selected repos and collaborators
                     ref
