@@ -11,23 +11,7 @@ final authProvider = ChangeNotifierProvider<AuthProvider>((ref) {
   return AuthProvider();
 });
 
-// class TokenNotifier extends StateNotifier<String> {
-//   TokenNotifier() : super('0'); // Initialize with the default value
 
-//   Future<void> updateAuthToken(String newToken) async {
-//     state = newToken;
-//   }
-// }
-
-// String firebaseToken = '0';
-
-// Future<String> updateFirebaseToken() async {
-//   var user = FirebaseAuth.instance.currentUser;
-//   if (user != null) {
-//     firebaseToken = (await user.getIdToken())!;
-//   }
-//   return firebaseToken;
-// }
 
 class AuthProvider extends ChangeNotifier {
   AuthStatus _authStatus = AuthStatus.initial;
