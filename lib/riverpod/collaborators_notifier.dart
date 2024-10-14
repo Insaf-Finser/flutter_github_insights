@@ -1,10 +1,10 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:git_rest/constants.dart';
-import 'package:git_rest/shared_preferences.dart';
-import 'package:git_rest/data/git_operations.dart';
-import 'package:git_rest/data/models/collaborator.dart';
-import 'package:git_rest/data/models/repository_collaborators.dart';
+import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/shared_preferences.dart';
+import 'package:githubinsights/data/git_operations.dart';
+import 'package:githubinsights/data/models/collaborator.dart';
+import 'package:githubinsights/data/models/repository_collaborators.dart';
 
 part 'collaborators_notifier.g.dart';
 
@@ -78,51 +78,50 @@ class CollaboratorsNotifier
       state = AsyncValue.error(e, stackTrace);
     }
   }
-Future<void> updateSelectedRepos(
-    List<Map<String, String>> selectedRepos) async {
-  _selectedRepos = selectedRepos;
 
-  if (_selectedRepos.isEmpty) {
-    // No repos selected, clear state
-    state = const AsyncValue.data([]);
-    return;
+  Future<void> updateSelectedRepos(
+      List<Map<String, String>> selectedRepos) async {
+    _selectedRepos = selectedRepos;
+
+    if (_selectedRepos.isEmpty) {
+      // No repos selected, clear state
+      state = const AsyncValue.data([]);
+      return;
+    }
+
+    final box = await Hive.openBox<RepositoryCollaborators>(
+        'repository_collaborators_box');
+    final cachedRepos =
+        box.values.toList().map((repo) => repo.repositoryName).toSet();
+
+    final reposToFetch = _selectedRepos
+        .map((repo) => repo['repo'])
+        .where(
+            (repoName) => repoName != null && !cachedRepos.contains(repoName))
+        .toList();
+
+    // Set loading state before fetching
+    state = const AsyncValue.loading();
+
+    if (reposToFetch.isNotEmpty) {
+      await _fetchAndCacheRepos(box);
+    }
+
+    // Update the state with the fetched or cached data
+    final updatedRepos = _selectedRepos
+        .map((repo) => box.get(repo['repo']))
+        .where((repo) => repo != null)
+        .cast<RepositoryCollaborators>()
+        .toList();
+
+    if (updatedRepos.isNotEmpty) {
+      printInDebug(
+          "Filtered repositories to update state with: ${updatedRepos[0].repositoryName}");
+    } else {
+      printInDebug("No repositories found to update the state with.");
+    }
+
+    // Update the state with the final data
+    state = AsyncValue.data(updatedRepos);
   }
-
-  final box = await Hive.openBox<RepositoryCollaborators>(
-      'repository_collaborators_box');
-  final cachedRepos =
-      box.values.toList().map((repo) => repo.repositoryName).toSet();
-
-  final reposToFetch = _selectedRepos
-      .map((repo) => repo['repo'])
-      .where(
-          (repoName) => repoName != null && !cachedRepos.contains(repoName))
-      .toList();
-
-  // Set loading state before fetching
-  state = const AsyncValue.loading();
-
-  if (reposToFetch.isNotEmpty) {
-    await _fetchAndCacheRepos(box);
-  }
-
-  // Update the state with the fetched or cached data
-  final updatedRepos = _selectedRepos
-      .map((repo) => box.get(repo['repo']))
-      .where((repo) => repo != null)
-      .cast<RepositoryCollaborators>()
-      .toList();
-
-  if (updatedRepos.isNotEmpty) {
-    printInDebug(
-        "Filtered repositories to update state with: ${updatedRepos[0].repositoryName}");
-  } else {
-    printInDebug("No repositories found to update the state with.");
-  }
-
-  // Update the state with the final data
-  state = AsyncValue.data(updatedRepos);
-}
-
-
 }

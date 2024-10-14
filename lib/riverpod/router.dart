@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:git_rest/riverpod/auth_provider.dart';
-import 'package:git_rest/routes/routes.dart';
-import 'package:git_rest/screens/error_screen.dart';
+import 'package:githubinsights/riverpod/auth_provider.dart';
+import 'package:githubinsights/routes/routes.dart';
+import 'package:githubinsights/screens/error_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final routerProvider = Provider(

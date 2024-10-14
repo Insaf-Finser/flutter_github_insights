@@ -53,11 +53,11 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBVCcY8ht0RwD-LnHHSI2xK9VOR3EwYn_4',
-    appId: '1:52238829616:android:30c68ba05664ebb6c145f5',
-    messagingSenderId: '52238829616',
-    projectId: 'flutter-github-insights-475de',
-    storageBucket: 'flutter-github-insights-475de.appspot.com',
+    apiKey: 'AIzaSyB7wAF9jms4mnSOrTTh_nWqWHP4Lq-Yfto',
+    appId: '1:765269707700:android:e3e61fbcce761df47200e1',
+    messagingSenderId: '765269707700',
+    projectId: 'githublogindev',
+    storageBucket: 'githublogindev.appspot.com',
   );
 
 }

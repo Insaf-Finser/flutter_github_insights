@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:git_rest/constants.dart';
-import 'package:git_rest/data/git_operations.dart';
-import 'package:git_rest/data/models/git_repo_model.dart';
-import 'package:git_rest/data/models/repo_content_model.dart';
+import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/data/git_operations.dart';
+import 'package:githubinsights/data/models/git_repo_model.dart';
+import 'package:githubinsights/data/models/repo_content_model.dart';
 import 'package:go_router/go_router.dart';
 
 class RepoContentScreen extends ConsumerStatefulWidget {

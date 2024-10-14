@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:git_rest/constants.dart';
+import 'package:githubinsights/constants.dart';
 import 'package:http/http.dart' as http;
 
 class GitOperations {
@@ -217,31 +217,24 @@ class GitOperations {
     required String ref,
   }) async {
     final url = 'https://api.github.com/repos/Harsh-Vipin/$repo/commits/$ref';
-    
 
     final headers = {
       'Authorization': 'Bearer $token',
       'Accept': 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
     };
-   
 
     try {
       final response = await http.get(Uri.parse(url), headers: headers);
-      
 
       if (response.statusCode == 200) {
         final commitDetails = json.decode(response.body);
-   
-        
 
         return commitDetails;
       } else {
-       
         throw Exception('Failed to fetch commit details: ${response.body}');
       }
     } catch (e) {
-     
       rethrow;
     }
   }

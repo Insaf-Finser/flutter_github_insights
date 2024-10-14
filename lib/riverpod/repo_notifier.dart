@@ -1,9 +1,9 @@
-import 'package:git_rest/constants.dart';
-import 'package:git_rest/shared_preferences.dart';
+import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/shared_preferences.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:git_rest/data/git_operations.dart';
-import 'package:git_rest/data/models/git_repo_model.dart';
-import 'package:git_rest/data/models/hive_model.dart' as hive_model;
+import 'package:githubinsights/data/git_operations.dart';
+import 'package:githubinsights/data/models/git_repo_model.dart';
+import 'package:githubinsights/data/models/hive_model.dart' as hive_model;
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'repo_notifier.g.dart';

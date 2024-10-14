@@ -1,4 +1,4 @@
-package com.example.git_rest
+package com.pragament.githubinsights
 
 import io.flutter.embedding.android.FlutterActivity
 

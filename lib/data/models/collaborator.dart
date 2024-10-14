@@ -1,4 +1,4 @@
-import 'package:git_rest/constants.dart';
+import 'package:githubinsights/constants.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'collaborator.g.dart';
@@ -83,33 +83,32 @@ class Collaborator extends HiveObject {
     required this.permissions,
     required this.roleName,
   });
-factory Collaborator.fromMap(Map<String, dynamic> map) {
-  try {
-    return Collaborator(
-      login: map['login'] ?? '',
-      id: map['id'] ?? 0,
-      nodeId: map['node_id'] ?? '',
-      avatarUrl: map['avatar_url'] ?? '',
-      url: map['url'] ?? '',
-      htmlUrl: map['html_url'] ?? '',
-      followersUrl: map['followers_url'] ?? '',
-      followingUrl: map['following_url'] ?? '',
-      gistsUrl: map['gists_url'] ?? '',
-      starredUrl: map['starred_url'] ?? '',
-      subscriptionsUrl: map['subscriptions_url'] ?? '',
-      organizationsUrl: map['organizations_url'] ?? '',
-      reposUrl: map['repos_url'] ?? '',
-      eventsUrl: map['events_url'] ?? '',
-      receivedEventsUrl: map['received_events_url'] ?? '',
-      type: map['type'] ?? '',
-      siteAdmin: map['site_admin'] ?? false,
-      permissions: Map<String, bool>.from(map['permissions'] ?? {}),
-      roleName: map['role_name'] ?? '',
-    );
-  } catch (e) {
-    printInDebug('Error in Collaborator.fromMap: $e');
-    rethrow;
+  factory Collaborator.fromMap(Map<String, dynamic> map) {
+    try {
+      return Collaborator(
+        login: map['login'] ?? '',
+        id: map['id'] ?? 0,
+        nodeId: map['node_id'] ?? '',
+        avatarUrl: map['avatar_url'] ?? '',
+        url: map['url'] ?? '',
+        htmlUrl: map['html_url'] ?? '',
+        followersUrl: map['followers_url'] ?? '',
+        followingUrl: map['following_url'] ?? '',
+        gistsUrl: map['gists_url'] ?? '',
+        starredUrl: map['starred_url'] ?? '',
+        subscriptionsUrl: map['subscriptions_url'] ?? '',
+        organizationsUrl: map['organizations_url'] ?? '',
+        reposUrl: map['repos_url'] ?? '',
+        eventsUrl: map['events_url'] ?? '',
+        receivedEventsUrl: map['received_events_url'] ?? '',
+        type: map['type'] ?? '',
+        siteAdmin: map['site_admin'] ?? false,
+        permissions: Map<String, bool>.from(map['permissions'] ?? {}),
+        roleName: map['role_name'] ?? '',
+      );
+    } catch (e) {
+      printInDebug('Error in Collaborator.fromMap: $e');
+      rethrow;
+    }
   }
-}
-
 }

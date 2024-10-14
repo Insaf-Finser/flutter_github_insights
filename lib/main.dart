@@ -1,14 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:git_rest/data/models/collaborator.dart';
-import 'package:git_rest/data/models/commit.dart';
-import 'package:git_rest/data/models/hive_model.dart';
-import 'package:git_rest/data/models/repository_collaborators.dart';
-import 'package:git_rest/data/models/repository_commits.dart';
-import 'package:git_rest/firebase_options.dart';
-import 'package:git_rest/riverpod/auth_provider.dart';
-import 'package:git_rest/riverpod/router.dart';
+import 'package:githubinsights/data/models/collaborator.dart';
+import 'package:githubinsights/data/models/commit.dart';
+import 'package:githubinsights/data/models/hive_model.dart';
+import 'package:githubinsights/data/models/repository_collaborators.dart';
+import 'package:githubinsights/data/models/repository_commits.dart';
+import 'package:githubinsights/firebase_options.dart';
+import 'package:githubinsights/riverpod/auth_provider.dart';
+import 'package:githubinsights/riverpod/router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {

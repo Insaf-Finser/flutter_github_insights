@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:git_rest/constants.dart';
-import 'package:git_rest/shared_preferences.dart';
+import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 
 enum AuthStatus { initial, authenticated, unauthenticated, loading }
@@ -10,8 +10,6 @@ enum AuthStatus { initial, authenticated, unauthenticated, loading }
 final authProvider = ChangeNotifierProvider<AuthProvider>((ref) {
   return AuthProvider();
 });
-
-
 
 class AuthProvider extends ChangeNotifier {
   AuthStatus _authStatus = AuthStatus.initial;

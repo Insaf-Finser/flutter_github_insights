@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:git_rest/constants.dart';
-import 'package:git_rest/data/git_operations.dart';
-import 'package:git_rest/data/models/git_repo_model.dart';
-import 'package:git_rest/riverpod/collaborators_notifier.dart';
-import 'package:git_rest/riverpod/repo_notifier.dart';
-import 'package:git_rest/routes/route_names.dart';
+import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/data/git_operations.dart';
+import 'package:githubinsights/data/models/git_repo_model.dart';
+import 'package:githubinsights/riverpod/collaborators_notifier.dart';
+import 'package:githubinsights/riverpod/repo_notifier.dart';
+import 'package:githubinsights/routes/route_names.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -19,9 +19,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final RepoNotifier repoNotifier;
   late final CollaboratorsNotifier collaboratorsNotifier;
-  List<Map<String, String>> selectedRepos = []; // List to keep track of selected repos
-  bool get _hasSelectedRepos => selectedRepos.isNotEmpty; // Check if any checkboxes are selected
-  final TextEditingController searchController = TextEditingController(); // Controller for search input
+  List<Map<String, String>> selectedRepos =
+      []; // List to keep track of selected repos
+  bool get _hasSelectedRepos =>
+      selectedRepos.isNotEmpty; // Check if any checkboxes are selected
+  final TextEditingController searchController =
+      TextEditingController(); // Controller for search input
   String searchQuery = ''; // Variable to store search query
 
   @override
@@ -55,7 +58,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               onChanged: (value) {
                 setState(() {
-                  searchQuery = value.toLowerCase(); // Update the search query on text change
+                  searchQuery = value
+                      .toLowerCase(); // Update the search query on text change
                 });
               },
             ),
@@ -66,7 +70,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final filteredRepos = repos.where((repo) {
                   final repoName = repo.name.toLowerCase();
                   final ownerName = repo.owner?.login?.toLowerCase() ?? '';
-                  return repoName.contains(searchQuery) || ownerName.contains(searchQuery);
+                  return repoName.contains(searchQuery) ||
+                      ownerName.contains(searchQuery);
                 }).toList();
 
                 return ListView.builder(
@@ -130,7 +135,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(child: Text('Error: $error')),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Error: $error')),
             ),
           ),
         ],

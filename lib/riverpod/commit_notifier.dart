@@ -1,9 +1,9 @@
-import 'package:git_rest/constants.dart';
-import 'package:git_rest/data/git_operations.dart';
-import 'package:git_rest/data/models/commit.dart';
+import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/data/git_operations.dart';
+import 'package:githubinsights/data/models/commit.dart';
 
-import 'package:git_rest/data/models/repository_commits.dart';
-import 'package:git_rest/shared_preferences.dart';
+import 'package:githubinsights/data/models/repository_commits.dart';
+import 'package:githubinsights/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -131,7 +131,6 @@ class CommitsNotifier
       final box = await Hive.openBox<RepositoryCommits>('gitCommitsBox');
 
       final repositoryCommitsList = box.values.toList();
-     
 
       for (var repoCommits in repositoryCommitsList) {
         if (repoCommits.commits.isEmpty) {
@@ -146,9 +145,6 @@ class CommitsNotifier
             repo: repoCommits.repositoryName,
             ref: commit.sha,
           );
-
-           
-
 
           // Parse commit stats
           final commitStats = data['stats'] != null
@@ -200,7 +196,6 @@ class CommitsNotifier
       // Update the Riverpod state with the new data
       state = AsyncValue.data(box.values.toList());
     } catch (e, stackTrace) {
-   
       state = AsyncValue.error(e, stackTrace);
     }
   }

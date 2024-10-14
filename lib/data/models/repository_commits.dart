@@ -1,4 +1,4 @@
-import 'package:git_rest/data/models/commit.dart';
+import 'package:githubinsights/data/models/commit.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 part 'repository_commits.g.dart';

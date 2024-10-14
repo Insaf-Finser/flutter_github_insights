@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:git_rest/constants.dart';
-import 'package:git_rest/riverpod/commit_notifier.dart';
-import 'package:git_rest/riverpod/collaborators_notifier.dart';
-import 'package:git_rest/routes/route_names.dart';
+import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/riverpod/commit_notifier.dart';
+import 'package:githubinsights/riverpod/collaborators_notifier.dart';
+import 'package:githubinsights/routes/route_names.dart';
 import 'package:go_router/go_router.dart';
 
 class RepositoryCollaboratorsScreen extends ConsumerStatefulWidget {
@@ -26,29 +26,30 @@ class _RepositoryCollaboratorsScreenState
   // Search functionality
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-Future<void> _selectDate(BuildContext context, bool isStartDate) async {
-  final pickedDate = await showDatePicker(
-    context: context,
-    initialDate: isStartDate
-        ? DateTime.now().subtract(const Duration(days: 365))
-        : DateTime.now(),
-    firstDate: DateTime(2000),
-    lastDate: DateTime.now(),
-  );
+  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: isStartDate
+          ? DateTime.now().subtract(const Duration(days: 365))
+          : DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
 
-  if (pickedDate != null) {
-    setState(() {
-      // Format the date as YYYY-MM-DD, which is compatible with DateTime.parse
-      final formattedDate = '${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}';
+    if (pickedDate != null) {
+      setState(() {
+        // Format the date as YYYY-MM-DD, which is compatible with DateTime.parse
+        final formattedDate =
+            '${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}';
 
-      if (isStartDate) {
-        _startDateController.text = formattedDate;
-      } else {
-        _endDateController.text = formattedDate;
-      }
-    });
+        if (isStartDate) {
+          _startDateController.text = formattedDate;
+        } else {
+          _endDateController.text = formattedDate;
+        }
+      });
+    }
   }
-}
 
   @override
   void dispose() {
@@ -175,8 +176,10 @@ Future<void> _selectDate(BuildContext context, bool isStartDate) async {
                     // Collect selected collaborators for all repositories
                     final selectedRepos = selectedCollaborators.entries
                         .where((entry) => entry.value.isNotEmpty)
-                        .map((entry) =>
-                            {'owner': entry.value.toString(), 'repo': entry.key})
+                        .map((entry) => {
+                              'owner': entry.value.toString(),
+                              'repo': entry.key
+                            })
                         .toList();
 
                     final allSelectedCollaborators = selectedCollaborators
@@ -193,7 +196,8 @@ Future<void> _selectDate(BuildContext context, bool isStartDate) async {
                     // Use selected start and end dates or default to last 5 years
                     final since = _startDateController.text.isNotEmpty
                         ? DateTime.parse(_startDateController.text)
-                        : DateTime.now().subtract(const Duration(days: 365 * 5));
+                        : DateTime.now()
+                            .subtract(const Duration(days: 365 * 5));
                     final until = _endDateController.text.isNotEmpty
                         ? DateTime.parse(_endDateController.text)
                         : DateTime.now();
