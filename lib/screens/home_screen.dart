@@ -160,6 +160,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: () {
+            context.pushNamed(Routes.userProfileScreen);
+          },
+          tooltip: 'User Profile',
+        ),
+        IconButton(
           icon: const Icon(Icons.refresh),
           onPressed: () {
             repoNotifier.updateCache();

@@ -5,6 +5,7 @@ import 'package:githubinsights/screens/chart_screen.dart';
 import 'package:githubinsights/screens/home_screen.dart';
 import 'package:githubinsights/screens/repo_contents_screen.dart';
 import 'package:githubinsights/screens/repository_collaborators_screen.dart';
+import 'package:githubinsights/screens/user_profile_screen.dart';
 
 import 'package:githubinsights/screens/welome_screen.dart';
 // Import the new screen
@@ -45,6 +46,13 @@ final List<GoRoute> routes = [
         name: Routes.chartScreen, // Name for ChartScreen
         builder: (context, state) {
           return const ChartScreen(); // Returning the ChartScreen widget
+        },
+      ),
+      GoRoute(
+        path: Routes.userProfileScreen,
+        name: Routes.userProfileScreen,
+        builder: (context, state) {
+          return const UserProfileScreen();
         },
       ),
     ],

@@ -30,6 +30,11 @@ class AuthProvider extends ChangeNotifier {
       GithubAuthProvider githubAuthProvider = GithubAuthProvider();
       githubAuthProvider.addScope('repo');
       githubAuthProvider.addScope('public_repo');
+      
+      // Set custom redirect URL if needed
+      // Note: Firebase Auth typically handles redirect URLs automatically
+      githubAuthProvider.setCustomParameters({
+      'redirect_uri': 'https://fluttergin1212.firebaseapp.com/__/auth/handler'});
 
       final userCredential =
           await FirebaseAuth.instance.signInWithProvider(githubAuthProvider);

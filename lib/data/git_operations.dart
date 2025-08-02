@@ -9,6 +9,129 @@ class GitOperations {
 
   GitOperations({required this.token});
 
+  // Fetch full user information
+  Future<Map<String, dynamic>> getUserInfo() async {
+    final response = await http.get(
+      Uri.parse('https://api.github.com/user'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    );
+    
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load user information: ${response.body}');
+    }
+  }
+
+  // Fetch user's organizations
+  Future<List<dynamic>> getUserOrganizations() async {
+    final response = await http.get(
+      Uri.parse('https://api.github.com/user/orgs'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    );
+    
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load user organizations: ${response.body}');
+    }
+  }
+
+  // Fetch repositories for a specific organization
+  Future<List<dynamic>> getOrganizationRepositories(String orgName) async {
+    final response = await http.get(
+      Uri.parse('https://api.github.com/orgs/$orgName/repos'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    );
+    
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load organization repositories: ${response.body}');
+    }
+  }
+
+  // Fetch all repositories (user + organizations) with pagination
+  Future<List<dynamic>> getAllRepositories({int perPage = 100}) async {
+    final allRepos = <dynamic>[];
+    
+    // Get user repositories
+    try {
+      final userRepos = await listRepositories(true); // Include private repos
+      allRepos.addAll(userRepos);
+    } catch (e) {
+      printInDebug('Error fetching user repositories: $e');
+    }
+    
+    // Get organization repositories
+    try {
+      final orgs = await getUserOrganizations();
+      for (final org in orgs) {
+        try {
+          final orgRepos = await getOrganizationRepositories(org['login']);
+          allRepos.addAll(orgRepos);
+        } catch (e) {
+          printInDebug('Error fetching repositories for org ${org['login']}: $e');
+        }
+      }
+    } catch (e) {
+      printInDebug('Error fetching organizations: $e');
+    }
+    
+    return allRepos;
+  }
+
+  // Fetch repositories with pagination support
+  Future<List<dynamic>> getRepositoriesWithPagination({
+    required String type, // 'user' or 'org'
+    String? orgName,
+    int page = 1,
+    int perPage = 100,
+    String? visibility, // 'all', 'public', 'private'
+  }) async {
+    String url;
+    if (type == 'user') {
+      url = 'https://api.github.com/user/repos?page=$page&per_page=$perPage';
+      if (visibility != null) {
+        url += '&visibility=$visibility';
+      }
+    } else if (type == 'org' && orgName != null) {
+      url = 'https://api.github.com/orgs/$orgName/repos?page=$page&per_page=$perPage';
+      if (visibility != null) {
+        url += '&type=$visibility';
+      }
+    } else {
+      throw Exception('Invalid parameters for repository fetching');
+    }
+
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    );
+    
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load repositories: ${response.body}');
+    }
+  }
+
   Future<List<dynamic>> listRepositories(bool showPrivateRepos) async {
     final response = await http.get(
       Uri.parse(showPrivateRepos
