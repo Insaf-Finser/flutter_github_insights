@@ -50,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 hintText: 'Search repositories...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -69,7 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               data: (repos) {
                 final filteredRepos = repos.where((repo) {
                   final repoName = repo.name.toLowerCase();
-                  final ownerName = repo.owner?.login?.toLowerCase() ?? '';
+                  final ownerName = (repo.owner?.login ?? '').toLowerCase();
                   return repoName.contains(searchQuery) ||
                       ownerName.contains(searchQuery);
                 }).toList();
@@ -178,7 +178,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Icon(Icons.arrow_circle_right),
             onPressed: () async {
               await collaboratorsNotifier.updateSelectedRepos(selectedRepos);
-              context.pushNamed(Routes.repositoryCollaboratorsScreen);
+              if (mounted) {
+                context.pushNamed(
+                  Routes.repositoryCollaboratorsScreen,
+                  extra: {'selectedRepos': selectedRepos},
+                );
+              }
             },
             tooltip: 'Update repo',
           ),
@@ -291,8 +296,10 @@ class _NewRepoDialogState extends State<NewRepoDialog> {
                 onPressed: () async {
                   try {
                     await widget.gitOperations
-                        .createRepository(nameC.text, isPrivate)
-                        .then((_) => context.pop());
+                        .createRepository(nameC.text, isPrivate);
+                    if (mounted) {
+                      context.pop();
+                    }
                   } on Exception catch (e) {
                     printInDebug(e.toString());
                   }

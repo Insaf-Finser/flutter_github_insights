@@ -38,7 +38,14 @@ final List<GoRoute> routes = [
         path: 'repositoryCollaborators', // Updated path
         name: 'repositoryCollaborators', // Updated name
         builder: (context, state) {
-          return const RepositoryCollaboratorsScreen();
+          final extra = state.extra;
+          final selectedRepos = (extra is Map && extra['selectedRepos'] is List)
+              ? (extra['selectedRepos'] as List)
+                  .cast<Map>()
+                  .map((e) => e.map((key, value) => MapEntry(key.toString(), value.toString())))
+                  .toList()
+              : const <Map<String, String>>[];
+          return RepositoryCollaboratorsScreen(selectedRepos: selectedRepos);
         },
       ),
       GoRoute(

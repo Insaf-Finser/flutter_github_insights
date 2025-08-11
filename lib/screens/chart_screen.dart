@@ -107,7 +107,7 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
                           ] else if (_selectedMetric == 'Deletions') ...[
                             Text(
                               'Additions: ${totalValues['additions']}',
-                              style: TextStyle(color: Colors.green),
+                              style: const TextStyle(color: Colors.green),
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -304,11 +304,11 @@ class _ChartScreenState extends ConsumerState<ChartScreen> {
       dotData: const FlDotData(show: false),
       belowBarData: BarAreaData(
         show: true,
-        color: barColor.withOpacity(0.4), // Darker gradient for area fill
+        color: barColor.withValues(alpha: 0.4), // Darker gradient for area fill
         gradient: LinearGradient(
           colors: [
-            barColor.withOpacity(0.7), // Stronger opacity
-            barColor.withOpacity(0.2), // Darker at the bottom
+            barColor.withValues(alpha: 0.7), // Stronger opacity
+            barColor.withValues(alpha: 0.2), // Darker at the bottom
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,

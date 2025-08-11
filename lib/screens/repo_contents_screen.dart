@@ -191,8 +191,10 @@ class _AddFileDialogContentState extends State<AddFileDialogContent> {
                                 widget.repo.name,
                                 fileName!,
                                 file!,
-                                commitMessageC.text)
-                            .then((_) => context.pop());
+                                commitMessageC.text);
+                        if (mounted) {
+                          context.pop();
+                        }
                       } on Exception catch (e) {
                         printInDebug(e.toString());
                       }
