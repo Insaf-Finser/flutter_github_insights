@@ -46,7 +46,7 @@ class UserInfoNotifier extends StateNotifier<UserInfoState> {
       state = state.copyWith(isLoading: true, error: null);
       
       final token = await getAccessToken();
-      if (token == null) {
+      if (token.isEmpty) {
         throw Exception('No access token available');
       }
 
@@ -78,7 +78,7 @@ class UserInfoNotifier extends StateNotifier<UserInfoState> {
   Future<void> fetchOrganizationRepositories(String orgName) async {
     try {
       final token = await getAccessToken();
-      if (token == null) {
+      if (token.isEmpty) {
         throw Exception('No access token available');
       }
 
@@ -102,7 +102,7 @@ class UserInfoNotifier extends StateNotifier<UserInfoState> {
   }) async {
     try {
       final token = await getAccessToken();
-      if (token == null) {
+      if (token.isEmpty) {
         throw Exception('No access token available');
       }
 

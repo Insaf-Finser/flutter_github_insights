@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:githubinsights/constants.dart';
+import 'package:githubinsights/data/models/repository_collaborators.dart';
 import 'package:githubinsights/riverpod/commit_notifier.dart';
 import 'package:githubinsights/riverpod/collaborators_notifier.dart';
 import 'package:githubinsights/routes/route_names.dart';
 import 'package:go_router/go_router.dart';
 
 class RepositoryCollaboratorsScreen extends ConsumerStatefulWidget {
-  const RepositoryCollaboratorsScreen({super.key});
-
+  const RepositoryCollaboratorsScreen({super.key, this.selectedRepos = const []});
+  final List<Map<String, String>> selectedRepos;
+  
   @override
   ConsumerState<RepositoryCollaboratorsScreen> createState() =>
       _RepositoryCollaboratorsScreenState();
@@ -18,6 +20,8 @@ class _RepositoryCollaboratorsScreenState
     extends ConsumerState<RepositoryCollaboratorsScreen> {
   // Map to store the selected collaborators for each repository
   final selectedCollaborators = <String, Set<String>>{};
+  // Variable to track the selected repository
+  String? _selectedRepository;
 
   // Separate controllers for start and end dates
   final TextEditingController _startDateController = TextEditingController();
@@ -38,6 +42,7 @@ class _RepositoryCollaboratorsScreenState
 
     if (pickedDate != null) {
       setState(() {
+        
         // Format the date as YYYY-MM-DD, which is compatible with DateTime.parse
         final formattedDate =
             '${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}';
@@ -47,6 +52,19 @@ class _RepositoryCollaboratorsScreenState
         } else {
           _endDateController.text = formattedDate;
         }
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure only collaborators for repos selected earlier are loaded
+    if (widget.selectedRepos.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref
+            .read(collaboratorsNotifierProvider.notifier)
+            .updateSelectedRepos(widget.selectedRepos);
       });
     }
   }
@@ -115,9 +133,9 @@ class _RepositoryCollaboratorsScreenState
                 child: TextFormField(
                   controller: _startDateController,
                   readOnly: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Start Date',
-                    suffixIcon: const Icon(Icons.calendar_today),
+                    suffixIcon: Icon(Icons.calendar_today),
                   ),
                   onTap: () => _selectDate(context, true),
                 ),
@@ -128,28 +146,56 @@ class _RepositoryCollaboratorsScreenState
                 child: TextFormField(
                   controller: _endDateController,
                   readOnly: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'End Date',
-                    suffixIcon: const Icon(Icons.calendar_today),
+                    suffixIcon: Icon(Icons.calendar_today),
                   ),
                   onTap: () => _selectDate(context, false),
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: filteredCollaboratorsList.length,
-                  itemBuilder: (context, index) {
-                    final repoCollaborators = filteredCollaboratorsList[index];
-                    // Initialize set of selected collaborators for the current repository
-                    final selectedSet = selectedCollaborators.putIfAbsent(
-                        repoCollaborators.repositoryName, () => <String>{});
-
-                    return Card(
-                      elevation: 0,
-                      child: ExpansionTile(
-                        title: Text(repoCollaborators.repositoryName),
-                        children:
-                            repoCollaborators.collaborators.map((collaborator) {
+              // Dropdown to select repository
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedRepository,
+                  hint: const Text('Select Repository'),
+                  items: widget.selectedRepos
+                      .map((repo) => DropdownMenuItem<String>(
+                            value: repo['repo'],
+                            child: Text(repo['repo'] ?? ''),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedRepository = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+              ),
+              // Show collaborators for the selected repository
+              if (_selectedRepository != null)
+                Expanded(
+                  child: Builder(
+                    builder: (context) {
+                      final repoCollaborators = filteredCollaboratorsList.firstWhere(
+                        (repo) => repo.repositoryName == _selectedRepository,
+                        orElse: () => RepositoryCollaborators(
+                          repositoryName: _selectedRepository!,
+                          collaborators: [],
+                        ),
+                      );
+                      if (repoCollaborators.collaborators.isEmpty) {
+                        return const Center(child: Text('No collaborators found.'));
+                      }
+                      final selectedSet = selectedCollaborators.putIfAbsent(
+                          repoCollaborators.repositoryName, () => <String>{});
+                      return ListView(
+                        children: repoCollaborators.collaborators.map((collaborator) {
                           return CheckboxListTile(
                             title: Text(collaborator.login),
                             value: selectedSet.contains(collaborator.login),
@@ -164,11 +210,10 @@ class _RepositoryCollaboratorsScreenState
                             },
                           );
                         }).toList(),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
@@ -203,7 +248,7 @@ class _RepositoryCollaboratorsScreenState
                         : DateTime.now();
 
                     // Call the CommitsNotifier to fetch commits for the selected repos and collaborators
-                    ref
+                    await ref
                         .read(commitsNotifierProvider.notifier)
                         .fetchAndCacheRepos(
                           selectedRepos: selectedRepos,
@@ -211,11 +256,13 @@ class _RepositoryCollaboratorsScreenState
                           since: since,
                           until: until,
                         );
-                    ref
+                    await ref
                         .read(commitsNotifierProvider.notifier)
                         .fetchCommitFiles();
 
-                    context.goNamed(Routes.chartScreen);
+                    if (mounted) {
+                      context.goNamed(Routes.chartScreen);
+                    }
                   },
                   child: const Text('Fetch Commits'),
                 ),
