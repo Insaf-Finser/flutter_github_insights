@@ -236,8 +236,12 @@ class GitOperations {
   }
 
   Future<List<dynamic>> getRepoCollaborators(String owner, String repo) async {
+    printInDebug('Fetching collaborators for $owner/$repo');
+    final url = 'https://api.github.com/repos/$owner/$repo/collaborators';
+    printInDebug('API URL: $url');
+    
     final response = await http.get(
-      Uri.parse('https://api.github.com/repos/$owner/$repo/collaborators'),
+      Uri.parse(url),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/vnd.github+json',
@@ -245,29 +249,97 @@ class GitOperations {
       },
     );
 
+    printInDebug('Response status: ${response.statusCode}');
+    printInDebug('Response body length: ${response.body.length}');
+    printInDebug('Response headers: ${response.headers}');
+
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final data = json.decode(response.body);
+      printInDebug('Successfully fetched ${data.length} collaborators for $owner/$repo');
+      
+      // Debug: Show first few collaborators
+      if (data.isNotEmpty) {
+        printInDebug('First collaborator data: ${data.first}');
+        if (data.length > 1) {
+          printInDebug('Second collaborator data: ${data[1]}');
+        }
+        if (data.length > 2) {
+          printInDebug('Third collaborator data: ${data[2]}');
+        }
+      }
+      
+      return data;
+    } else if (response.statusCode == 404) {
+      printInDebug('Repository not found or no access: $owner/$repo');
+      return [];
+    } else if (response.statusCode == 403) {
+      printInDebug('Access forbidden - may need different permissions for $owner/$repo');
+      // Try to fetch contributors instead
+      printInDebug('Trying to fetch contributors instead...');
+      return await getRepoContributors(owner, repo);
+    } else if (response.statusCode == 401) {
+      printInDebug('Unauthorized - token may be invalid or expired');
+      throw Exception('Unauthorized access to GitHub API. Please check your token.');
     } else {
+      printInDebug('Error response body: ${response.body}');
       throw Exception(
-          'Failed to fetch collaborators for repository $repo: ${response.body}');
+          'Failed to fetch collaborators for repository $repo (Status: ${response.statusCode}): ${response.body}');
+    }
+  }
+
+  // Fallback method to fetch contributors if collaborators endpoint fails
+  Future<List<dynamic>> getRepoContributors(String owner, String repo) async {
+    printInDebug('Fetching contributors for $owner/$repo');
+    final url = 'https://api.github.com/repos/$owner/$repo/contributors';
+    printInDebug('Contributors API URL: $url');
+    
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    );
+
+    printInDebug('Contributors response status: ${response.statusCode}');
+    printInDebug('Contributors response body length: ${response.body.length}');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      printInDebug('Successfully fetched ${data.length} contributors for $owner/$repo');
+      return data;
+    } else {
+      printInDebug('Failed to fetch contributors: ${response.statusCode} - ${response.body}');
+      return [];
     }
   }
 
   // Fetch collaborators for multiple repositories
   Future<Map<String, List<dynamic>>> getCollaboratorsForSelectedRepos(
       List<Map<String, String>> selectedRepos) async {
+    printInDebug('getCollaboratorsForSelectedRepos called with ${selectedRepos.length} repositories');
     final collaboratorsMap = <String, List<dynamic>>{};
 
     for (final repoInfo in selectedRepos) {
       final owner = repoInfo['owner']!;
       final repo = repoInfo['repo']!;
+      printInDebug('Processing repository: $owner/$repo');
 
       try {
         final collaborators = await getRepoCollaborators(owner, repo);
         collaboratorsMap[repo] = collaborators;
+        printInDebug('Successfully added ${collaborators.length} collaborators for $repo');
       } catch (e) {
         printInDebug('Error fetching collaborators for $repo: $e');
+        // Continue with other repositories even if one fails
+        collaboratorsMap[repo] = [];
       }
+    }
+
+    printInDebug('Final collaborators map: ${collaboratorsMap.keys.toList()}');
+    for (final entry in collaboratorsMap.entries) {
+      printInDebug('${entry.key}: ${entry.value.length} collaborators');
     }
 
     return collaboratorsMap;
